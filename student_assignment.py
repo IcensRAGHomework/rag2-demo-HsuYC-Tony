@@ -7,6 +7,7 @@ q2_pdf = "勞動基準法.pdf"
 
 
 def hw02_1(q1_pdf):
+    print('hw02_1')
     pass
 
 def hw02_2(q2_pdf):
