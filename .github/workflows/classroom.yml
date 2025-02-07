@@ -1,11 +1,21 @@
 name: Autograding Tests
-'on': [push]
+'on':
+  push:
+    paths:
+      - 'student_assignment.py'
 
 jobs:
   autograding:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Detect Unauthorized Changes
+        run: |
+          git fetch origin main
+          if ! git diff --exit-code origin/main -- .github/workflows/classroom.yml; then
+            echo "Modifying classroom.yml is not allowed!"
+            exit 1
+          fi
       - name: Checkout student code
         uses: actions/checkout@v4
 
