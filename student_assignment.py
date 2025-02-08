@@ -11,4 +11,5 @@ def hw02_1(q1_pdf):
     pass
 
 def hw02_2(q2_pdf):
+    print('hw02_2')
     pass
