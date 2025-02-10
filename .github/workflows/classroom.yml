@@ -12,6 +12,12 @@ jobs:
       - name: Trigger Autograding
         run: |
           curl -X POST -H "Authorization: token ${{ secrets.ORG_PAT_TOKEN }}" \
-               -H "Accept: application/vnd.github.v3+json" \
-               https://api.github.com/repos/IcensRAGHomework/autograder-demo/actions/workflows/autograde.yml/dispatches \
-               -d '{"ref":"main", "inputs":{"student_repo":"${{ github.repository }}", "commit_sha":"${{ github.sha }}"}}'
+            -H "Accept: application/vnd.github.v3+json" \
+            -d '{
+                  "event_type": "autograde",
+                  "client_payload": {
+                    "repo": "${{ github.repository }}",
+                    "commit_sha": "${{ github.sha }}"
+                  }
+                }' \
+            https://api.github.com/repos/IcensRAGHomework/autograder-demo/dispatches
