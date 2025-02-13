@@ -69,13 +69,18 @@ jobs:
           echo "ASSIGNMENT_ID=$ASSIGNMENT_ID" >> $GITHUB_ENV
           echo "ASSIGNMENT_NAME=$ASSIGNMENT_NAME" >> $GITHUB_ENV
 
-
-      - name: Fetch Roster Identifier
+      - name: Debug Fetch Roster Identifier
         run: |
-          ROSTER_ID=$(curl -s -H "Authorization: token ${{ secrets.ORG_PAT_TOKEN_2 }}" \
-                            -H "Accept: application/vnd.github.v3+json" \
-                            https://api.github.com/classrooms/$CLASSROOM_ID/assignments/$ASSIGNMENT_ID | jq -r '.roster_identifier')
-          echo "ROSTER_ID=$ROSTER_ID" >> $GITHUB_ENV
+          curl -s -H "Authorization: token ${{ secrets.ORG_PAT_TOKEN_2 }}" \
+                  -H "Accept: application/vnd.github.v3+json" \
+                  https://api.github.com/classrooms/$CLASSROOM_ID/assignments/$ASSIGNMENT_ID
+      
+      # - name: Fetch Roster Identifier
+      #   run: |
+      #     ROSTER_ID=$(curl -s -H "Authorization: token ${{ secrets.ORG_PAT_TOKEN_2 }}" \
+      #                       -H "Accept: application/vnd.github.v3+json" \
+      #                       https://api.github.com/classrooms/$CLASSROOM_ID/assignments/$ASSIGNMENT_ID | jq -r '.roster_identifier')
+      #     echo "ROSTER_ID=$ROSTER_ID" >> $GITHUB_ENV
 
       
       # - name: Debug API Response
