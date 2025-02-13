@@ -75,6 +75,8 @@ jobs:
           GRADES_JSON=$(curl -s -H "Authorization: token ${{ secrets.ORG_PAT_TOKEN_2 }}" \
                               -H "Accept: application/vnd.github.v3+json" \
                               "https://api.github.com/assignments/${{ env.ASSIGNMENT_ID }}/grades")
+          echo "Raw API Response:"
+          echo "$GRADES_JSON"
       
           # Ensure valid JSON response
           if ! echo "$GRADES_JSON" | jq -e . >/dev/null 2>&1; then
