@@ -9,46 +9,46 @@ jobs:
   trigger-autograding:
     runs-on: ubuntu-latest
     steps:
-      - name: Test the Authentication
-        run: |
-          curl -H "Authorization: token ${{ secrets.ORG_PAT_TOKEN_2 }}" \
-               -H "Accept: application/vnd.github.v3+json" \
-               https://api.github.com/user
+      # - name: Test the Authentication
+      #   run: |
+      #     curl -H "Authorization: token ${{ secrets.ORG_PAT_TOKEN_2 }}" \
+      #          -H "Accept: application/vnd.github.v3+json" \
+      #          https://api.github.com/user
       
-      - name: Fetch all classrooms
+      # - name: Fetch all classrooms
+      #   run: |
+      #     curl -H "Authorization: token ${{ secrets.ORG_PAT_TOKEN_2 }}" \
+      #          -H "Accept: application/vnd.github.v3+json" \
+      #          https://api.github.com/classrooms
+
+      - name: Fetch Classroom ID
         run: |
-          curl -H "Authorization: token ${{ secrets.ORG_PAT_TOKEN_2 }}" \
-               -H "Accept: application/vnd.github.v3+json" \
-               https://api.github.com/classrooms
+          CLASSROOM_ID=$(curl -s -H "Authorization: token ${{ secrets.ORG_PAT_TOKEN_2 }}" \
+                           -H "Accept: application/vnd.github.v3+json" \
+                           https://api.github.com/classrooms | jq -r '.[1].id')
+          echo "CLASSROOM_ID=$CLASSROOM_ID" >> $GITHUB_ENV
 
-      # - name: Fetch Classroom ID
-      #   run: |
-      #     CLASSROOM_ID=$(curl -s -H "Authorization: token ${{ secrets.ORG_PAT_TOKEN }}" \
-      #                      -H "Accept: application/vnd.github.v3+json" \
-      #                      https://api.github.com/classrooms | jq -r '.[0].id')
-      #     echo "CLASSROOM_ID=$CLASSROOM_ID" >> $GITHUB_ENV
+      - name: Fetch Assignment Info
+        run: |
+          ASSIGNMENT_INFO=$(curl -s -H "Authorization: token ${{ secrets.ORG_PAT_TOKEN_2 }}" \
+                                -H "Accept: application/vnd.github.v3+json" \
+                                https://api.github.com/classrooms/$CLASSROOM_ID/assignments)
+          
+          # Extract Assignment ID based on student repository name
+          ASSIGNMENT_ID=$(echo "$ASSIGNMENT_INFO" | jq -r '.[] | select(.repository.full_name=="${{ github.repository }}") | .id')
+          
+          # Get Assignment Name
+          ASSIGNMENT_NAME=$(echo "$ASSIGNMENT_INFO" | jq -r '.[] | select(.repository.full_name=="${{ github.repository }}") | .title')
+          
+          echo "ASSIGNMENT_ID=$ASSIGNMENT_ID" >> $GITHUB_ENV
+          echo "ASSIGNMENT_NAME=$ASSIGNMENT_NAME" >> $GITHUB_ENV
 
-      # - name: Fetch Assignment Info
-      #   run: |
-      #     ASSIGNMENT_INFO=$(curl -s -H "Authorization: token ${{ secrets.ORG_PAT_TOKEN }}" \
-      #                           -H "Accept: application/vnd.github.v3+json" \
-      #                           https://api.github.com/classrooms/$CLASSROOM_ID/assignments)
-          
-      #     # Extract Assignment ID based on student repository name
-      #     ASSIGNMENT_ID=$(echo "$ASSIGNMENT_INFO" | jq -r '.[] | select(.repository.full_name=="${{ github.repository }}") | .id')
-          
-      #     # Get Assignment Name
-      #     ASSIGNMENT_NAME=$(echo "$ASSIGNMENT_INFO" | jq -r '.[] | select(.repository.full_name=="${{ github.repository }}") | .title')
-          
-      #     echo "ASSIGNMENT_ID=$ASSIGNMENT_ID" >> $GITHUB_ENV
-      #     echo "ASSIGNMENT_NAME=$ASSIGNMENT_NAME" >> $GITHUB_ENV
-
-      # - name: Fetch Roster Identifier
-      #   run: |
-      #     ROSTER_ID=$(curl -s -H "Authorization: token ${{ secrets.ORG_PAT_TOKEN }}" \
-      #                       -H "Accept: application/vnd.github.v3+json" \
-      #                       https://api.github.com/classrooms/$CLASSROOM_ID/assignments/$ASSIGNMENT_ID | jq -r '.roster_identifier')
-      #     echo "ROSTER_ID=$ROSTER_ID" >> $GITHUB_ENV
+      - name: Fetch Roster Identifier
+        run: |
+          ROSTER_ID=$(curl -s -H "Authorization: token ${{ secrets.ORG_PAT_TOKEN }}" \
+                            -H "Accept: application/vnd.github.v3+json" \
+                            https://api.github.com/classrooms/$CLASSROOM_ID/assignments/$ASSIGNMENT_ID | jq -r '.roster_identifier')
+          echo "ROSTER_ID=$ROSTER_ID" >> $GITHUB_ENV
 
       
       # - name: Debug API Response
