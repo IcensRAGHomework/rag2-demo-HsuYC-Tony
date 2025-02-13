@@ -19,7 +19,7 @@ jobs:
         run: |
           curl -H "Authorization: token ${{ secrets.ORG_PAT_TOKEN }}" \
                -H "Accept: application/vnd.github.v3+json" \
-               https://classroom.github.com/api/classrooms
+               https://api.github.com/classrooms
 
 
       # - name: Debug API Response
