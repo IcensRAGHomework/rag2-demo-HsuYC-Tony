@@ -160,7 +160,6 @@ jobs:
                    "student_repo": "${{ github.repository }}",
                    "commit_sha": "${{ github.sha }}",
                    "assignment_name": "${{ env.assignment_name }}", 
-                   "assignment_url": "https://github.com/${{ github.repository }}",
                    "github_username": "${{ github.actor }}",
                    "roster_identifier": "${{ env.roster_identifier }}",
                    "student_repository_url": "https://github.com/${{ github.repository }}",
