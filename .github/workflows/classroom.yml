@@ -15,11 +15,11 @@ jobs:
       #          -H "Accept: application/vnd.github.v3+json" \
       #          https://api.github.com/user
       
-      # - name: Fetch all classrooms
-      #   run: |
-      #     curl -H "Authorization: token ${{ secrets.ORG_PAT_TOKEN_2 }}" \
-      #          -H "Accept: application/vnd.github.v3+json" \
-      #          https://api.github.com/classrooms
+      - name: Fetch all classrooms
+        run: |
+          curl -H "Authorization: token ${{ secrets.ORG_PAT_TOKEN_2 }}" \
+               -H "Accept: application/vnd.github.v3+json" \
+               https://api.github.com/classrooms
 
       - name: Fetch Classroom ID
         run: |
