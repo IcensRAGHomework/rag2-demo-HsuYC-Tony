@@ -9,58 +9,71 @@ jobs:
   trigger-autograding:
     runs-on: ubuntu-latest
     steps:
-      - name: Debug API Response
+      - name: Test the Authentication First
         run: |
-          curl -X GET -H "Authorization: token ${{ secrets.ORG_PAT_TOKEN }}" \
+          curl -H "Authorization: token ${{ secrets.ORG_PAT_TOKEN }}" \
                -H "Accept: application/vnd.github.v3+json" \
-               "https://api.github.com/repos/${{ github.repository }}/assignments" | tee api_response.json
-
-      - name: Fetch Assignment Name & Roster Identifier
-        id: fetch_info
+               https://api.github.com/user
+      
+      - name: Get Classroom ID First
         run: |
-          # Fetch repository metadata (to get assignment name from description)
-          REPO_DATA=$(curl -s -H "Authorization: token ${{ secrets.ORG_PAT_TOKEN }}" \
-                            -H "Accept: application/vnd.github.v3+json" \
-                            "https://api.github.com/repos/${{ github.repository }}")
-      
-          # Extract assignment name (repository description)
-          ASSIGNMENT_NAME=$(echo "$REPO_DATA" | jq -r '.description')
-      
-          # If description is empty, fallback to repo name
-          if [ -z "$ASSIGNMENT_NAME" ] || [ "$ASSIGNMENT_NAME" == "null" ]; then
-            ASSIGNMENT_NAME="${{ github.event.repository.name }}"
-          fi
-      
-          # Fetch roster identifier from Classroom API
-          RESPONSE=$(curl -s -H "Authorization: token ${{ secrets.ORG_PAT_TOKEN }}" \
-                           -H "Accept: application/vnd.github.v3+json" \
-                           "https://api.github.com/orgs/IcensRAGHomework/roster")
-      
-          # Extract roster identifier using GitHub API (Find by GitHub Username)
-          ROSTER_ID=$(echo "$RESPONSE" | jq -r --arg USER "${{ github.actor }}" '.students[] | select(.github_username == $USER) | .identifier')
-      
-          # If empty, set to "UNKNOWN"
-          if [ -z "$ROSTER_ID" ]; then
-            ROSTER_ID="UNKNOWN"
-          fi
-      
-          echo "assignment_name=$ASSIGNMENT_NAME" >> $GITHUB_ENV
-          echo "roster_identifier=$ROSTER_ID" >> $GITHUB_ENV
-
-      - name: Trigger Private Autograder
-        run: |
-          curl -X POST -H "Authorization: token ${{ secrets.ORG_PAT_TOKEN }}" \
+          curl -H "Authorization: token ${{ secrets.ORG_PAT_TOKEN }}" \
                -H "Accept: application/vnd.github.v3+json" \
-               https://api.github.com/repos/IcensRAGHomework/autograder-demo/actions/workflows/autograde.yml/dispatches \
-               -d '{
-                 "ref": "main",
-                 "inputs": {
-                   "student_repo": "${{ github.repository }}",
-                   "commit_sha": "${{ github.sha }}",
-                   "assignment_name": "${{ env.assignment_name }}", 
-                   "assignment_url": "https://github.com/${{ github.repository }}",
-                   "github_username": "${{ github.actor }}",
-                   "roster_identifier": "${{ env.roster_identifier }}",
-                   "student_repository_url": "https://github.com/${{ github.repository }}"
-                 }
-               }'
+               https://classroom.github.com/api/classrooms
+
+
+      # - name: Debug API Response
+      #   run: |
+      #     curl -X GET -H "Authorization: token ${{ secrets.ORG_PAT_TOKEN }}" \
+      #          -H "Accept: application/vnd.github.v3+json" \
+      #          "https://api.github.com/repos/${{ github.repository }}/assignments" | tee api_response.json
+
+      # - name: Fetch Assignment Name & Roster Identifier
+      #   id: fetch_info
+      #   run: |
+      #     # Fetch repository metadata (to get assignment name from description)
+      #     REPO_DATA=$(curl -s -H "Authorization: token ${{ secrets.ORG_PAT_TOKEN }}" \
+      #                       -H "Accept: application/vnd.github.v3+json" \
+      #                       "https://api.github.com/repos/${{ github.repository }}")
+      
+      #     # Extract assignment name (repository description)
+      #     ASSIGNMENT_NAME=$(echo "$REPO_DATA" | jq -r '.description')
+      
+      #     # If description is empty, fallback to repo name
+      #     if [ -z "$ASSIGNMENT_NAME" ] || [ "$ASSIGNMENT_NAME" == "null" ]; then
+      #       ASSIGNMENT_NAME="${{ github.event.repository.name }}"
+      #     fi
+      
+      #     # Fetch roster identifier from Classroom API
+      #     RESPONSE=$(curl -s -H "Authorization: token ${{ secrets.ORG_PAT_TOKEN }}" \
+      #                      -H "Accept: application/vnd.github.v3+json" \
+      #                      "https://api.github.com/orgs/IcensRAGHomework/roster")
+      
+      #     # Extract roster identifier using GitHub API (Find by GitHub Username)
+      #     ROSTER_ID=$(echo "$RESPONSE" | jq -r --arg USER "${{ github.actor }}" '.students[] | select(.github_username == $USER) | .identifier')
+      
+      #     # If empty, set to "UNKNOWN"
+      #     if [ -z "$ROSTER_ID" ]; then
+      #       ROSTER_ID="UNKNOWN"
+      #     fi
+      
+      #     echo "assignment_name=$ASSIGNMENT_NAME" >> $GITHUB_ENV
+      #     echo "roster_identifier=$ROSTER_ID" >> $GITHUB_ENV
+
+      # - name: Trigger Private Autograder
+      #   run: |
+      #     curl -X POST -H "Authorization: token ${{ secrets.ORG_PAT_TOKEN }}" \
+      #          -H "Accept: application/vnd.github.v3+json" \
+      #          https://api.github.com/repos/IcensRAGHomework/autograder-demo/actions/workflows/autograde.yml/dispatches \
+      #          -d '{
+      #            "ref": "main",
+      #            "inputs": {
+      #              "student_repo": "${{ github.repository }}",
+      #              "commit_sha": "${{ github.sha }}",
+      #              "assignment_name": "${{ env.assignment_name }}", 
+      #              "assignment_url": "https://github.com/${{ github.repository }}",
+      #              "github_username": "${{ github.actor }}",
+      #              "roster_identifier": "${{ env.roster_identifier }}",
+      #              "student_repository_url": "https://github.com/${{ github.repository }}"
+      #            }
+      #          }'
