@@ -30,21 +30,18 @@ jobs:
 
       - name: Fetch Assignment Info
         run: |
-          curl -s -H "Authorization: token ${{ secrets.ORG_PAT_TOKEN_2 }}" \
-                  -H "Accept: application/vnd.github.v3+json" \
-                  https://api.github.com/classrooms/$CLASSROOM_ID/assignments
-          # ASSIGNMENT_INFO=$(curl -s -H "Authorization: token ${{ secrets.ORG_PAT_TOKEN_2 }}" \
-          #                       -H "Accept: application/vnd.github.v3+json" \
-          #                       https://api.github.com/classrooms/$CLASSROOM_ID/assignments)
+          # Fetch all assignments for the classroom
+          ASSIGNMENT_INFO=$(curl -s -H "Authorization: token ${{ secrets.ORG_PAT_TOKEN }}" \
+                                -H "Accept: application/vnd.github.v3+json" \
+                                https://api.github.com/classrooms/${{ env.CLASSROOM_ID }}/assignments)
           
-          # # Extract Assignment ID based on student repository name
-          # ASSIGNMENT_ID=$(echo "$ASSIGNMENT_INFO" | jq -r '.[] | select(.repository.full_name=="${{ github.repository }}") | .id')
-          
-          # # Get Assignment Name
-          # ASSIGNMENT_NAME=$(echo "$ASSIGNMENT_INFO" | jq -r '.[] | select(.repository.full_name=="${{ github.repository }}") | .title')
-          
-          # echo "ASSIGNMENT_ID=$ASSIGNMENT_ID" >> $GITHUB_ENV
-          # echo "ASSIGNMENT_NAME=$ASSIGNMENT_NAME" >> $GITHUB_ENV
+          # Extract assignment ID and name based on repository slug matching `github.event.repository.name`
+          ASSIGNMENT_ID=$(echo "$ASSIGNMENT_INFO" | jq -r '.[] | select(.slug=="${{ github.event.repository.name }}") | .id')
+          ASSIGNMENT_NAME=$(echo "$ASSIGNMENT_INFO" | jq -r '.[] | select(.slug=="${{ github.event.repository.name }}") | .title')
+      
+          # Save to environment variables
+          echo "ASSIGNMENT_ID=$ASSIGNMENT_ID" >> $GITHUB_ENV
+          echo "ASSIGNMENT_NAME=$ASSIGNMENT_NAME" >> $GITHUB_ENV
 
       # - name: Fetch Roster Identifier
       #   run: |
