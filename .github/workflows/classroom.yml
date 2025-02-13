@@ -9,18 +9,17 @@ jobs:
   trigger-autograding:
     runs-on: ubuntu-latest
     steps:
-      - name: Test the Authentication First
+      - name: Test the Authentication
         run: |
           curl -H "Authorization: token ${{ secrets.ORG_PAT_TOKEN }}" \
                -H "Accept: application/vnd.github.v3+json" \
                https://api.github.com/user
       
-      - name: Get Classroom ID First
+      - name: Fetch all classrooms
         run: |
           curl -H "Authorization: token ${{ secrets.ORG_PAT_TOKEN }}" \
                -H "Accept: application/vnd.github.v3+json" \
                https://api.github.com/classrooms
-
 
       # - name: Debug API Response
       #   run: |
