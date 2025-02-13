@@ -69,11 +69,47 @@ jobs:
           echo "ASSIGNMENT_ID=$ASSIGNMENT_ID" >> $GITHUB_ENV
           echo "ASSIGNMENT_NAME=$ASSIGNMENT_NAME" >> $GITHUB_ENV
 
-      - name: Debug Fetch Roster Identifier
+      - name: Fetch Roster Identifier & Submission Timestamp
         run: |
-          curl -s -H "Authorization: token ${{ secrets.ORG_PAT_TOKEN_2 }}" \
-                  -H "Accept: application/vnd.github.v3+json" \
-                  https://api.github.com/classrooms/$CLASSROOM_ID/assignments/$ASSIGNMENT_ID
+          # Fetch student grades for the assignment
+          GRADES_JSON=$(curl -s -H "Authorization: token ${{ secrets.ORG_PAT_TOKEN_2 }}" \
+                              -H "Accept: application/vnd.github.v3+json" \
+                              "https://api.github.com/assignments/${{ env.ASSIGNMENT_ID }}/grades")
+      
+          # Ensure valid JSON response
+          if ! echo "$GRADES_JSON" | jq -e . >/dev/null 2>&1; then
+            echo "Error: API returned invalid JSON for grades"
+            exit 1
+          fi
+      
+          # Extract roster identifier and submission timestamp based on the matching GitHub username
+          ROSTER_IDENTIFIER=$(echo "$GRADES_JSON" | jq -r '.[] | select(.github_username=="${{ github.actor }}") | .roster_identifier')
+          SUBMISSION_TIMESTAMP=$(echo "$GRADES_JSON" | jq -r '.[] | select(.github_username=="${{ github.actor }}") | .submission_timestamp')
+      
+          # Validate extracted values
+          if [[ -z "$ROSTER_IDENTIFIER" || "$ROSTER_IDENTIFIER" == "null" ]]; then
+            echo "Error: Roster identifier not found for user ${{ github.actor }}"
+            exit 1
+          fi
+      
+          if [[ -z "$SUBMISSION_TIMESTAMP" || "$SUBMISSION_TIMESTAMP" == "null" ]]; then
+            echo "Warning: No submission timestamp found for user ${{ github.actor }}"
+          fi
+      
+          # Save to environment variables
+          echo "ROSTER_IDENTIFIER=$ROSTER_IDENTIFIER" >> $GITHUB_ENV
+          echo "SUBMISSION_TIMESTAMP=$SUBMISSION_TIMESTAMP" >> $GITHUB_ENV
+      
+          # Output for debugging
+          echo "Roster Identifier: $ROSTER_IDENTIFIER"
+          echo "Submission Timestamp: $SUBMISSION_TIMESTAMP"
+        shell: bash
+
+      # - name: Debug Fetch Roster Identifier
+      #   run: |
+      #     curl -s -H "Authorization: token ${{ secrets.ORG_PAT_TOKEN_2 }}" \
+      #             -H "Accept: application/vnd.github.v3+json" \
+      #             https://api.github.com/classrooms/$CLASSROOM_ID/assignments/$ASSIGNMENT_ID
       
       # - name: Fetch Roster Identifier
       #   run: |
