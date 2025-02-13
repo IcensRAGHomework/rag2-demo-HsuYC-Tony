@@ -89,9 +89,13 @@ jobs:
           SUBMISSION_TIMESTAMP=$(echo "$GRADES_JSON" | jq -r '.[] | select(.github_username=="${{ github.actor }}") | .submission_timestamp')
       
           # Validate extracted values
+          # if [[ -z "$ROSTER_IDENTIFIER" || "$ROSTER_IDENTIFIER" == "null" ]]; then
+          #   echo "Error: Roster identifier not found for user ${{ github.actor }}"
+          #   exit 1
+          # fi
+          # If roster_identifier is empty, set it to "Not Set"
           if [[ -z "$ROSTER_IDENTIFIER" || "$ROSTER_IDENTIFIER" == "null" ]]; then
-            echo "Error: Roster identifier not found for user ${{ github.actor }}"
-            exit 1
+            ROSTER_IDENTIFIER="Not Set"
           fi
       
           if [[ -z "$SUBMISSION_TIMESTAMP" || "$SUBMISSION_TIMESTAMP" == "null" ]]; then
