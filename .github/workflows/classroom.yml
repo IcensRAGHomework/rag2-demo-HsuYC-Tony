@@ -182,6 +182,17 @@ jobs:
                  }
                }'
 
+      - name: Wait for Results
+        run: |
+          while [[ -z "$HW02_Q1_RESULTS" ]] || [[ -z "$HW02_Q2_RESULTS" ]]; do
+            echo "Waiting for grading to complete..."
+            sleep 10
+          done
+        env:
+          # This will be set by Workflow C
+          HW02_Q1_RESULTS: ${{ github.event.inputs.hw02_q1_results }}  
+          HW02_Q2_RESULTS: ${{ github.event.inputs.hw02_q2_results }}
+
   # receive_score:
   #   if: github.event_name == 'workflow_dispatch'
   #   runs-on: ubuntu-latest
