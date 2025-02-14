@@ -186,11 +186,10 @@ jobs:
         run: |
           RESULTS_FILE="grading_results.txt"
       
-          while [ ! -f "$RESULTS_FILE" ]; do
+          # Wait until the file exists and is non-empty
+          while [[ ! -s "$RESULTS_FILE" ]]; do
             echo "Waiting for grading to complete..."
             sleep 10
-            git fetch origin  # Ensure we pull the latest changes
-            git checkout origin/main -- $RESULTS_FILE || true
           done
       
           source "$RESULTS_FILE"
