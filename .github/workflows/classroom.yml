@@ -201,13 +201,13 @@ jobs:
       - name: Get result of question 1
         id: Hw02_Q1
         run: |
-          HW02_Q1_RESULTS=$(grep 'HW02_Q1_RESULTS' grading_results.txt | cut -d '=' -f2)
+          HW02_Q1_RESULTS=$(grep 'HW02_Q1_RESULTS' grading_results.txt | cut -d ':' -f2)
           echo "HW02_Q1_RESULTS=${HW02_Q1_RESULTS:-0}" >> $GITHUB_ENV
       
       - name: Get result of question 2
         id: Hw02_Q2
         run: |
-          HW02_Q2_RESULTS=$(grep 'HW02_Q2_RESULTS' grading_results.txt | cut -d '=' -f2)
+          HW02_Q2_RESULTS=$(grep 'HW02_Q2_RESULTS' grading_results.txt | cut -d ':' -f2)
           echo "HW02_Q2_RESULTS=${HW02_Q2_RESULTS:-0}" >> $GITHUB_ENV
 
       - name: Debug Receive Results
