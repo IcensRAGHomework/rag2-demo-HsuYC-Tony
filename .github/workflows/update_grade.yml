@@ -20,42 +20,69 @@ jobs:
   update-grade:
     runs-on: ubuntu-latest
     steps:
-      - name: Fetch and Update Student Grade
+      - name: Get result of question 1
+        id: Hw02_Q1
         run: |
-          ASSIGNMENT_ID="YOUR_ASSIGNMENT_ID"
-          API_URL="https://api.github.com/assignments/$ASSIGNMENT_ID/grades"
-          GITHUB_USERNAME="${{ inputs.github_username }}"
-          POINTS_AWARDED="${{ inputs.points_awarded }}"
-          POINTS_AVAILABLE="${{ inputs.points_available }}"
+          HW02_Q1_RESULTS="${{ inputs.hw02_q1_results }}"
+          echo "HW02_Q1_RESULTS=${HW02_Q1_RESULTS:-0}" >> $GITHUB_ENV
 
-          # Fetch existing grades
-          GRADES_JSON=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-                             -H "Accept: application/vnd.github.v3+json" \
-                             "$API_URL")
+      - name: Get result of question 2
+        id: Hw02_Q2
+        run: |
+          HW02_Q2_RESULTS="${{ inputs.hw02_q2_results }}"
+          echo "HW02_Q2_RESULTS=${HW02_Q2_RESULTS:-0}" >> $GITHUB_ENV
 
-          # Ensure response is an array
-          if ! echo "$GRADES_JSON" | jq -e '.[0]' > /dev/null; then
-            echo "Error: API response is not a valid JSON array."
-            echo "$GRADES_JSON"
-            exit 1
-          fi
+      - name: Debug Receive Results
+        run: |
+          echo "Receive Q1 Result: $HW02_Q1_RESULTS"
+          echo "Receive Q2 Result: $HW02_Q2_RESULTS"
+      
+      # Aggregate autograding results
+      - name: Report autograding results
+        id: grading_report
+        uses: classroom-resources/autograding-grading-reporter@v1
+        env:
+          HW02_Q1_RESULTS: "${{ env.HW02_Q1_RESULTS }}"
+          HW02_Q2_RESULTS: "${{ env.HW02_Q2_RESULTS }}"
+        with:
+          runners: Hw02_Q1,Hw02_Q2
 
-          # Extract student's data
-          STUDENT_DATA=$(echo "$GRADES_JSON" | jq -c --arg user "$GITHUB_USERNAME" '.[] | select(.github_username == $user)')
+      # - name: Fetch and Update Student Grade
+      #   run: |
+      #     ASSIGNMENT_ID="YOUR_ASSIGNMENT_ID"
+      #     API_URL="https://api.github.com/assignments/$ASSIGNMENT_ID/grades"
+      #     GITHUB_USERNAME="${{ inputs.github_username }}"
+      #     POINTS_AWARDED="${{ inputs.points_awarded }}"
+      #     POINTS_AVAILABLE="${{ inputs.points_available }}"
 
-          if [[ -z "$STUDENT_DATA" || "$STUDENT_DATA" == "null" ]]; then
-            echo "Error: Student record not found for username: $GITHUB_USERNAME"
-            exit 1
-          fi
+      #     # Fetch existing grades
+      #     GRADES_JSON=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+      #                        -H "Accept: application/vnd.github.v3+json" \
+      #                        "$API_URL")
 
-          # Update points_awarded and points_available
-          UPDATED_DATA=$(echo "$STUDENT_DATA" | jq --arg pa "$POINTS_AWARDED" --arg pb "$POINTS_AVAILABLE" \
-              '.points_awarded = ($pa | tonumber) | .points_available = ($pb | tonumber)')
+      #     # Ensure response is an array
+      #     if ! echo "$GRADES_JSON" | jq -e '.[0]' > /dev/null; then
+      #       echo "Error: API response is not a valid JSON array."
+      #       echo "$GRADES_JSON"
+      #       exit 1
+      #     fi
 
-          # Send PATCH request to update the grade
-          RESPONSE=$(curl -s -X PATCH -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-                             -H "Accept: application/vnd.github.v3+json" \
-                             -d "$UPDATED_DATA" \
-                             "$API_URL")
+      #     # Extract student's data
+      #     STUDENT_DATA=$(echo "$GRADES_JSON" | jq -c --arg user "$GITHUB_USERNAME" '.[] | select(.github_username == $user)')
 
-          echo "Updated grade for $GITHUB_USERNAME: $POINTS_AWARDED/$POINTS_AVAILABLE"
+      #     if [[ -z "$STUDENT_DATA" || "$STUDENT_DATA" == "null" ]]; then
+      #       echo "Error: Student record not found for username: $GITHUB_USERNAME"
+      #       exit 1
+      #     fi
+
+      #     # Update points_awarded and points_available
+      #     UPDATED_DATA=$(echo "$STUDENT_DATA" | jq --arg pa "$POINTS_AWARDED" --arg pb "$POINTS_AVAILABLE" \
+      #         '.points_awarded = ($pa | tonumber) | .points_available = ($pb | tonumber)')
+
+      #     # Send PATCH request to update the grade
+      #     RESPONSE=$(curl -s -X PATCH -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+      #                        -H "Accept: application/vnd.github.v3+json" \
+      #                        -d "$UPDATED_DATA" \
+      #                        "$API_URL")
+
+      #     echo "Updated grade for $GITHUB_USERNAME: $POINTS_AWARDED/$POINTS_AVAILABLE"
