@@ -1,5 +1,10 @@
 name: Receive Results
 
+permissions:
+  contents: write
+  actions: write
+  checks: write
+
 on:
   workflow_dispatch:
     inputs:
