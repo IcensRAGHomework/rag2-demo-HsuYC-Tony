@@ -31,8 +31,8 @@ jobs:
 
       - name: Store Results in File
         run: |
-          echo "HW02_Q1_RESULTS=${{ github.event.inputs.hw02_q1_results }}" >> grading_results.txt
-          echo "HW02_Q2_RESULTS=${{ github.event.inputs.hw02_q2_results }}" >> grading_results.txt
+          echo "HW02_Q1_RESULTS:${{ github.event.inputs.hw02_q1_results }}" >> grading_results.txt
+          echo "HW02_Q2_RESULTS:${{ github.event.inputs.hw02_q2_results }}" >> grading_results.txt
 
       - name: Debug Received Results
         run: |
