@@ -182,60 +182,60 @@ jobs:
                  }
                }'
 
-      - name: Checkout Student Repository
-        uses: actions/checkout@v4
-        with:
-          repository: ${{ github.repository }}
-          token: ${{ secrets.GITHUB_TOKEN }} # Ensure the workflow has permission
-          fetch-depth: 0 # Get the full history to allow pulling updates
+      # - name: Checkout Student Repository
+      #   uses: actions/checkout@v4
+      #   with:
+      #     repository: ${{ github.repository }}
+      #     token: ${{ secrets.GITHUB_TOKEN }} # Ensure the workflow has permission
+      #     fetch-depth: 0 # Get the full history to allow pulling updates
 
-      - name: Wait for Results
-        run: |
-          RESULTS_FILE="grading_results.txt"
+      # - name: Wait for Results
+      #   run: |
+      #     RESULTS_FILE="grading_results.txt"
       
-          # Keep pulling the latest changes until the file exists and is non-empty
-          while [[ ! -s "$RESULTS_FILE" ]]; do
-            echo "Waiting for grading to complete..."
-            git pull origin main || echo "Git pull failed, retrying..."
-            sleep 10
-          done
+      #     # Keep pulling the latest changes until the file exists and is non-empty
+      #     while [[ ! -s "$RESULTS_FILE" ]]; do
+      #       echo "Waiting for grading to complete..."
+      #       git pull origin main || echo "Git pull failed, retrying..."
+      #       sleep 10
+      #     done
       
-          echo "Grading completed. Proceeding with workflow."
+      #     echo "Grading completed. Proceeding with workflow."
 
-      - name: Get result of question 1
-        id: Hw02_Q1
-        run: |
-          HW02_Q1_RESULTS=$(grep 'HW02_Q1_RESULTS' grading_results.txt | cut -d ':' -f2)
-          echo "HW02_Q1_RESULTS=${HW02_Q1_RESULTS:-0}" >> $GITHUB_ENV
+      # - name: Get result of question 1
+      #   id: Hw02_Q1
+      #   run: |
+      #     HW02_Q1_RESULTS=$(grep 'HW02_Q1_RESULTS' grading_results.txt | cut -d ':' -f2)
+      #     echo "HW02_Q1_RESULTS=${HW02_Q1_RESULTS:-0}" >> $GITHUB_ENV
       
-      - name: Get result of question 2
-        id: Hw02_Q2
-        run: |
-          HW02_Q2_RESULTS=$(grep 'HW02_Q2_RESULTS' grading_results.txt | cut -d ':' -f2)
-          echo "HW02_Q2_RESULTS=${HW02_Q2_RESULTS:-0}" >> $GITHUB_ENV
+      # - name: Get result of question 2
+      #   id: Hw02_Q2
+      #   run: |
+      #     HW02_Q2_RESULTS=$(grep 'HW02_Q2_RESULTS' grading_results.txt | cut -d ':' -f2)
+      #     echo "HW02_Q2_RESULTS=${HW02_Q2_RESULTS:-0}" >> $GITHUB_ENV
 
-      - name: Debug Receive Results
-        run: |
-          echo "Receive Q1 Result: $HW02_Q1_RESULTS"
-          echo "Receive Q2 Result: $HW02_Q2_RESULTS"
+      # - name: Debug Receive Results
+      #   run: |
+      #     echo "Receive Q1 Result: $HW02_Q1_RESULTS"
+      #     echo "Receive Q2 Result: $HW02_Q2_RESULTS"
 
-      - name: Remove grading_results.txt
-        run: |
-          git config --global user.email "github-actions@github.com"
-          git config --global user.name "GitHub Actions"
-          git rm grading_results.txt
-          git commit -m "Remove grading results" || echo "No changes to commit"
-          git push origin main || echo "No new changes to push"
+      # - name: Remove grading_results.txt
+      #   run: |
+      #     git config --global user.email "github-actions@github.com"
+      #     git config --global user.name "GitHub Actions"
+      #     git rm grading_results.txt
+      #     git commit -m "Remove grading results" || echo "No changes to commit"
+      #     git push origin main || echo "No new changes to push"
 
-      # Aggregate autograding results
-      - name: Report autograding results
-        id: grading_report
-        uses: classroom-resources/autograding-grading-reporter@v1
-        env:
-          HW02_Q1_RESULTS: "${{ env.HW02_Q1_RESULTS }}"
-          HW02_Q2_RESULTS: "${{ env.HW02_Q2_RESULTS }}"
-        with:
-          runners: Hw02_Q1,Hw02_Q2
+      # # Aggregate autograding results
+      # - name: Report autograding results
+      #   id: grading_report
+      #   uses: classroom-resources/autograding-grading-reporter@v1
+      #   env:
+      #     HW02_Q1_RESULTS: "${{ env.HW02_Q1_RESULTS }}"
+      #     HW02_Q2_RESULTS: "${{ env.HW02_Q2_RESULTS }}"
+      #   with:
+      #     runners: Hw02_Q1,Hw02_Q2
 
 
   # receive_score:
