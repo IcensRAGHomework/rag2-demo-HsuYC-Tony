@@ -2,8 +2,9 @@ name: Update Student Grade
 
 permissions:
   contents: write
-  actions: write
+  pull-requests: write
   checks: write
+  actions: write
 
 on:
   workflow_dispatch:
