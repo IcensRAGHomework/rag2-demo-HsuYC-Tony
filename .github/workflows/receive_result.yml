@@ -11,7 +11,7 @@ on:
         required: true
 
 jobs:
-  process-score:
+  process-result:
     runs-on: ubuntu-latest
     steps:
       - name: Store result1 in Workflow
