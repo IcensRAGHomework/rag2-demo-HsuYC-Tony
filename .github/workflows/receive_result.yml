@@ -14,27 +14,35 @@ jobs:
   process-result:
     runs-on: ubuntu-latest
     steps:
-      - name: Store result1 in Workflow
+      - name: Checkout Student Repository
+        uses: actions/checkout@v4
+
+      - name: Ensure Clean Grading Results File
         run: |
-          echo "HW02_Q1_RESULTS=${{ github.event.inputs.hw02_q1_results }}" >> $GITHUB_ENV
+          RESULTS_FILE="grading_results.txt"
 
-      - name: Store result2 in Workflow
+          # Ensure the file exists but is empty
+          echo "" > "$RESULTS_FILE"
+
+      - name: Store Results in File
         run: |
-          echo "HW02_Q2_RESULTS=${{ github.event.inputs.hw02_q2_results }}" >> $GITHUB_ENV
+          echo "HW02_Q1_RESULTS=${{ github.event.inputs.hw02_q1_results }}" >> grading_results.txt
+          echo "HW02_Q2_RESULTS=${{ github.event.inputs.hw02_q2_results }}" >> grading_results.txt
 
-      - name: Debug Receive Results
+      - name: Debug Received Results
         run: |
-          echo "Receive Q1 Result: ${{ env.HW02_Q1_RESULTS }}"
-          echo "Receive Q2 Result: ${{ env.HW02_Q2_RESULTS }}"
+          cat grading_results.txt
 
-      # - name: Store Score in Workflow
-      #   run: |
-      #     echo "SCORE=${{ github.event.inputs.total_score }}" >> $GITHUB_ENV
+      - name: Commit and Push Results
+        run: |
+          git config --global user.email "github-actions@github.com"
+          git config --global user.name "GitHub Actions"
 
-      # - name: Add Annotation
-      #   run: |
-      #     echo "::notice file=student_assignment.py,line=1::Autograding complete - Score: ${{ github.event.inputs.total_score }}/2"
-
-      # - name: Fail if Score < 2
-      #   if: ${{ github.event.inputs.total_score < 2 }}
-      #   run: exit 1
+          # Check if there are any changes
+          if [[ -n $(git status --porcelain grading_results.txt) ]]; then
+            git add grading_results.txt
+            git commit -m "Update grading results"
+            git push
+          else
+            echo "No changes to commit."
+          fi
