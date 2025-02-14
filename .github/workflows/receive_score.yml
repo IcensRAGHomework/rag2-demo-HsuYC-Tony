@@ -1,0 +1,21 @@
+name: Receive Score
+
+on:
+  workflow_dispatch:
+    inputs:
+      total_score:
+        description: "Total score from autograder"
+        required: true
+        type: string
+
+jobs:
+  receive_score:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print received score
+        run: |
+          echo "Received score: ${{ github.event.inputs.total_score }}"
+
+      - name: Add Annotation with Score
+        run: |
+          echo "::notice file=student_assignment.py,line=1,col=1::Autograder Score: ${{ github.event.inputs.total_score }}"
