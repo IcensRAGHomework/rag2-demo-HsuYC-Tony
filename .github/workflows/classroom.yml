@@ -191,6 +191,8 @@ jobs:
 
       - name: Reset grading_results.txt
         run: |
+          git config --global user.email "github-actions@github.com"
+          git config --global user.name "GitHub Actions"
           echo "" > grading_results.txt
           git add grading_results.txt
           git commit -m "Reset grading results" || echo "No changes to commit"
