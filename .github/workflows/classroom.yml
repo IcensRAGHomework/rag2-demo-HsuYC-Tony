@@ -184,32 +184,37 @@ jobs:
 
       - name: Wait for Results
         run: |
-          while [[ -z "$HW02_Q1_RESULTS" ]] || [[ -z "$HW02_Q2_RESULTS" ]]; do
+          RESULTS_FILE="grading_results.txt"
+      
+          while [ ! -f "$RESULTS_FILE" ]; do
             echo "Waiting for grading to complete..."
             sleep 10
+            git fetch origin  # Ensure we pull the latest changes
+            git checkout origin/main -- $RESULTS_FILE || true
           done
-        env:
-          # This will be set by Workflow C
-          HW02_Q1_RESULTS: ${{ github.event.inputs.hw02_q1_results }}  
-          HW02_Q2_RESULTS: ${{ github.event.inputs.hw02_q2_results }}
+      
+          source "$RESULTS_FILE"
+          echo "Grading completed. Results:"
+          echo "Q1 Result: $HW02_Q1_RESULTS"
+          echo "Q2 Result: $HW02_Q2_RESULTS"
 
       - name: Get result of question 1
         id: Hw02_Q1
         run: |
-          HW02_Q1_RESULTS="${{ env.HW02_Q1_RESULTS }}"
-          # echo "HW02_Q1_RESULTS=${HW02_Q1_RESULTS:-0}" >> $GITHUB_ENV
-
+          HW02_Q1_RESULTS=$(grep 'HW02_Q1_RESULTS' grading_results.txt | cut -d '=' -f2)
+          echo "HW02_Q1_RESULTS=${HW02_Q1_RESULTS:-0}" >> $GITHUB_ENV
+      
       - name: Get result of question 2
         id: Hw02_Q2
         run: |
-          HW02_Q2_RESULTS="${{ env.HW02_Q2_RESULTS }}"
-          # echo "HW02_Q2_RESULTS=${HW02_Q2_RESULTS:-0}" >> $GITHUB_ENV
+          HW02_Q2_RESULTS=$(grep 'HW02_Q2_RESULTS' grading_results.txt | cut -d '=' -f2)
+          echo "HW02_Q2_RESULTS=${HW02_Q2_RESULTS:-0}" >> $GITHUB_ENV
 
       - name: Debug Receive Results
         run: |
           echo "Receive Q1 Result: $HW02_Q1_RESULTS"
           echo "Receive Q2 Result: $HW02_Q2_RESULTS"
-      
+
       # Aggregate autograding results
       - name: Report autograding results
         id: grading_report
@@ -219,6 +224,7 @@ jobs:
           HW02_Q2_RESULTS: "${{ env.HW02_Q2_RESULTS }}"
         with:
           runners: Hw02_Q1,Hw02_Q2
+
 
   # receive_score:
   #   if: github.event_name == 'workflow_dispatch'
