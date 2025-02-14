@@ -22,4 +22,5 @@ jobs:
       - name: Add Annotation with Score
         run: |
           echo "::notice file=student_assignment.py,line=1,col=1,title=Autograding complete::Points ${{ github.event.inputs.total_score }}/2"
+          echo "::notice file=student_assignment.py,line=1,col=1,title=Autograding report::{\"totalPoints\":${{ github.event.inputs.total_score }},\"maxPoints\":2}"
 
