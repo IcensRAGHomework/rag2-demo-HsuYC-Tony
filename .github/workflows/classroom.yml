@@ -189,15 +189,6 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }} # Ensure the workflow has permission
           fetch-depth: 0 # Get the full history to allow pulling updates
 
-      - name: Reset grading_results.txt
-        run: |
-          git config --global user.email "github-actions@github.com"
-          git config --global user.name "GitHub Actions"
-          echo "" > grading_results.txt
-          git add grading_results.txt
-          git commit -m "Reset grading results" || echo "No changes to commit"
-          git push origin main || echo "No new changes to push"
-
       - name: Wait for Results
         run: |
           RESULTS_FILE="grading_results.txt"
@@ -227,6 +218,15 @@ jobs:
         run: |
           echo "Receive Q1 Result: $HW02_Q1_RESULTS"
           echo "Receive Q2 Result: $HW02_Q2_RESULTS"
+
+      - name: Reset grading_results.txt
+        run: |
+          git config --global user.email "github-actions@github.com"
+          git config --global user.name "GitHub Actions"
+          echo "" > grading_results.txt
+          git add grading_results.txt
+          git commit -m "Reset grading results" || echo "No changes to commit"
+          git push origin main || echo "No new changes to push"
 
       # Aggregate autograding results
       - name: Report autograding results
