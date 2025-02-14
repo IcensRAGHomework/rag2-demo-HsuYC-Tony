@@ -3,9 +3,6 @@ name: Update Student Grade
 on:
   workflow_dispatch:
     inputs:
-      github_username:
-        description: "GitHub username of the student"
-        required: true
       points_awarded:
         description: "Points awarded"
         required: true
@@ -21,7 +18,8 @@ jobs:
         run: |
           ASSIGNMENT_ID="753296"
           API_URL="https://api.github.com/assignments/$ASSIGNMENT_ID/grades"
-          GITHUB_USERNAME="${{ inputs.github_username }}"
+          # GITHUB_USERNAME="${{ inputs.github_username }}"
+          GITHUB_USERNAME="${{ github.actor }}"
           POINTS_AWARDED="${{ inputs.points_awarded }}"
           POINTS_AVAILABLE="${{ inputs.points_available }}"
 
