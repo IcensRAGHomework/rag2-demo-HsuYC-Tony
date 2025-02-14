@@ -182,20 +182,25 @@ jobs:
                  }
                }'
 
+      - name: Checkout Student Repository
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository }}
+          token: ${{ secrets.GITHUB_TOKEN }} # Ensure the workflow has permission
+          fetch-depth: 0 # Get the full history to allow pulling updates
+
       - name: Wait for Results
         run: |
           RESULTS_FILE="grading_results.txt"
       
-          # Wait until the file exists and is non-empty
+          # Keep pulling the latest changes until the file exists and is non-empty
           while [[ ! -s "$RESULTS_FILE" ]]; do
             echo "Waiting for grading to complete..."
+            git pull origin main || echo "Git pull failed, retrying..."
             sleep 10
           done
       
-          source "$RESULTS_FILE"
-          echo "Grading completed. Results:"
-          echo "Q1 Result: $HW02_Q1_RESULTS"
-          echo "Q2 Result: $HW02_Q2_RESULTS"
+          echo "Grading completed. Proceeding with workflow."
 
       - name: Get result of question 1
         id: Hw02_Q1
