@@ -1,0 +1,40 @@
+name: Receive Results
+
+on:
+  workflow_dispatch:
+    inputs:
+      hw02_q1_results:
+        description: "Results of question 1"
+        required: true
+      hw02_q2_results:
+        description: "Results of question 2"
+        required: true
+
+jobs:
+  process-score:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Store result1 in Workflow
+        run: |
+          echo "HW02_Q1_RESULTS=${{ github.event.inputs.hw02_q1_results }}" >> $GITHUB_ENV
+
+      - name: Store result2 in Workflow
+        run: |
+          echo "HW02_Q2_RESULTS=${{ github.event.inputs.hw02_q2_results }}" >> $GITHUB_ENV
+
+      - name: Debug Receive Results
+        run: |
+          echo "Receive Q1 Result: ${{ env.HW02_Q1_RESULTS }}"
+          echo "Receive Q2 Result: ${{ env.HW02_Q2_RESULTS }}"
+
+      # - name: Store Score in Workflow
+      #   run: |
+      #     echo "SCORE=${{ github.event.inputs.total_score }}" >> $GITHUB_ENV
+
+      # - name: Add Annotation
+      #   run: |
+      #     echo "::notice file=student_assignment.py,line=1::Autograding complete - Score: ${{ github.event.inputs.total_score }}/2"
+
+      # - name: Fail if Score < 2
+      #   if: ${{ github.event.inputs.total_score < 2 }}
+      #   run: exit 1
