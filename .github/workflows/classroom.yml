@@ -1,12 +1,27 @@
 name: Trigger Autograding
 
+permissions:
+  contents: write
+  actions: write
+  checks: write
+
 'on':
   push:
     paths:
       - 'student_assignment.py'
+  workflow_dispatch:
+    inputs:
+      total_score:
+        description: "Total score from autograder"
+        required: true
+        type: string
+      commit_sha:
+        description: "Commit SHA associated with the submission"
+        required: true
 
 jobs:
   trigger-autograding:
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
       # - name: Test the Authentication
@@ -166,3 +181,69 @@ jobs:
                    "submission_timestamp": "${{ env.submission_timestamp }}"
                  }
                }'
+
+  receive_score:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      # - name: Print received score
+      #   run: |
+      #     echo "Received score: ${{ github.event.inputs.total_score }}"
+
+      # - name: Add Annotation with Score
+      #   run: |
+      #     echo "::notice file=student_assignment.py,line=1,col=1::Autograder Score: ${{ github.event.inputs.total_score }}"
+      # - name: Add Annotation with Score
+      #   run: |
+      #     echo "::notice file=student_assignment.py,line=1,col=1,title=Autograding complete::Points ${{ github.event.inputs.total_score }}/2"
+      #     echo "::notice file=student_assignment.py,line=1,col=1,title=Autograding report::{\"totalPoints\":${{ github.event.inputs.total_score }},\"maxPoints\":2}"
+
+      - name: Get Check Run ID
+        run: |
+          CHECK_RUN_ID=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+                               -H "Accept: application/vnd.github.v3+json" \
+                               "https://api.github.com/repos/${{ github.repository }}/commits/${{ inputs.commit_sha }}/check-runs" | \
+                               jq -r '.check_runs[0].id')
+
+          echo "CHECK_RUN_ID=$CHECK_RUN_ID" >> $GITHUB_ENV
+
+      - name: Determine Conclusion
+        run: |
+          if [ "${{ inputs.total_score }}" -eq 2 ]; then
+            echo "CONCLUSION=success" >> $GITHUB_ENV
+          else
+            echo "CONCLUSION=failure" >> $GITHUB_ENV
+          fi
+
+      - name: Add Annotations to Check Run
+        run: |
+          curl -X PATCH -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+               -H "Accept: application/vnd.github.v3+json" \
+               -d '{
+                  "name": "Autograding",
+                  "status": "completed",
+                  "conclusion": "'"${CONCLUSION}"'",
+                  "output": {
+                    "title": "Autograding Results",
+                    "summary": "Your score: '"${{ inputs.total_score }}"'/2",
+                    "annotations": [
+                      {
+                        "path": "student_assignment.py",
+                        "start_line": 1,
+                        "end_line": 1,
+                        "annotation_level": "notice",
+                        "title": "Autograding complete",
+                        "message": "Points '"${{ inputs.total_score }}"'/2"
+                      },
+                      {
+                        "path": "student_assignment.py",
+                        "start_line": 1,
+                        "end_line": 1,
+                        "annotation_level": "notice",
+                        "title": "Autograding report",
+                        "message": "{\"totalPoints\": '"${{ inputs.total_score }}"', \"maxPoints\": 2}"
+                      }
+                    ]
+                  }
+                }' \
+               "https://api.github.com/repos/${{ github.repository }}/check-runs/$CHECK_RUN_ID"
