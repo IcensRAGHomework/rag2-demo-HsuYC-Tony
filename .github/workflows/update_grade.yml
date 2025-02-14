@@ -9,14 +9,11 @@ permissions:
 on:
   workflow_dispatch:
     inputs:
-      github_username:
-        description: "GitHub username of the student"
+      hw02_q1_results:
+        description: "Results of question 1"
         required: true
-      points_awarded:
-        description: "Points awarded"
-        required: true
-      points_available:
-        description: "Total points available"
+      hw02_q2_results:
+        description: "Results of question 2"
         required: true
 
 jobs:
