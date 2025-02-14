@@ -1,0 +1,51 @@
+name: Update Student Grade
+
+on:
+  workflow_dispatch:
+    inputs:
+      github_username:
+        description: "GitHub username of the student"
+        required: true
+      points_awarded:
+        description: "Points awarded"
+        required: true
+      points_available:
+        description: "Total points available"
+        required: true
+
+jobs:
+  update-grade:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Update Student Grade
+        run: |
+          ASSIGNMENT_ID="753296"
+          API_URL="https://api.github.com/assignments/$ASSIGNMENT_ID/grades"
+          GITHUB_USERNAME="${{ inputs.github_username }}"
+          POINTS_AWARDED="${{ inputs.points_awarded }}"
+          POINTS_AVAILABLE="${{ inputs.points_available }}"
+
+          # Fetch existing grades
+          GRADES_JSON=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+                             -H "Accept: application/vnd.github.v3+json" \
+                             "$API_URL")
+
+          # Extract current student's data
+          STUDENT_DATA=$(echo "$GRADES_JSON" | jq -c --arg user "$GITHUB_USERNAME" '.[] | select(.github_username == $user)')
+
+          if [[ -z "$STUDENT_DATA" ]]; then
+            echo "Error: Student record not found for username: $GITHUB_USERNAME"
+            exit 1
+          fi
+
+          # Update points_awarded and points_available
+          UPDATED_DATA=$(echo "$STUDENT_DATA" | jq --arg pa "$POINTS_AWARDED" --arg pb "$POINTS_AVAILABLE" \
+              '.points_awarded = ($pa | tonumber) | .points_available = ($pb | tonumber)')
+
+          # Send PATCH request to update the grade
+          curl -X PATCH -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+               -H "Accept: application/vnd.github.v3+json" \
+               -d "$UPDATED_DATA" \
+               "$API_URL"
+
+          echo "Updated grade for $GITHUB_USERNAME: $POINTS_AWARDED/$POINTS_AVAILABLE"
