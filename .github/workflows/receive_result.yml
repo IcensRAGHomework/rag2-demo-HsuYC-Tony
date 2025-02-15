@@ -22,21 +22,21 @@ jobs:
       # - name: Checkout Student Repository
       #   uses: actions/checkout@v4
 
-      - name: Ensure Clean Grading Results File
-        run: |
-          RESULTS_FILE="/tmp/grading_results.txt"
+      # - name: Ensure Clean Grading Results File
+      #   run: |
+      #     RESULTS_FILE="/tmp/grading_results.txt"
 
-          # Ensure the file exists but is empty
-          echo "" > "$RESULTS_FILE"
+      #     # Ensure the file exists but is empty
+      #     echo "" > "$RESULTS_FILE"
 
       # - name: Store Results in File
       #   run: |
       #     echo "HW02_Q1_RESULTS:${{ github.event.inputs.hw02_q1_results }}" >> grading_results.txt
       #     echo "HW02_Q2_RESULTS:${{ github.event.inputs.hw02_q2_results }}" >> grading_results.txt
 
-      - name: Debug Received Results
-        run: |
-          cat /tmp/grading_results.txt
+      # - name: Debug Received Results
+      #   run: |
+      #     cat /tmp/grading_results.txt
 
       # - name: Commit and Push Results
       #   run: |
@@ -54,13 +54,22 @@ jobs:
 
       - name: Save Grading Results
         run: |
-          echo "Score: 2/2" > /tmp/grading_results.txt
-          echo "HW02_Q1_RESULTS:${{ github.event.inputs.hw02_q1_results }}" >> /tmp/grading_results.txt
-          echo "HW02_Q2_RESULTS:${{ github.event.inputs.hw02_q2_results }}" >> /tmp/grading_results.txt
+          # echo "Score: 2/2" > /tmp/grading_results.txt
+          # echo "HW02_Q1_RESULTS:${{ github.event.inputs.hw02_q1_results }}" >> /tmp/grading_results.txt
+          # echo "HW02_Q2_RESULTS:${{ github.event.inputs.hw02_q2_results }}" >> /tmp/grading_results.txt
+          echo "HW02_Q1_RESULTS:${{ github.event.inputs.hw02_q1_results }}" > grading_results.txt
+          echo "HW02_Q2_RESULTS:${{ github.event.inputs.hw02_q2_results }}" >> grading_results.txt
       
-      - name: Cache Grading Results
-        uses: actions/cache@v4
+      # - name: Cache Grading Results
+      #   uses: actions/cache@v4
+      #   with:
+      #     path: /tmp/grading_results.txt
+      #     key: grading-results-${{ github.run_id }}
+
+      - name: Upload Grading Results as Artifact
+        uses: actions/upload-artifact@v4
         with:
-          path: /tmp/grading_results.txt
-          key: grading-results-${{ github.run_id }}
+          name: grading-results
+          path: grading_results.txt
+          retention-days: 1  # Keep the artifact for 1 day
 
