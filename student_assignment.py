@@ -22,5 +22,16 @@ def hw02_1(q1_pdf):
     return char_chunks[-1]
 
 def hw02_2(q2_pdf):
-    print('0')
-    pass
+    loader = PyPDFLoader(q2_pdf)
+    docs = loader.load()
+    pdf_text = ""
+    for doc in docs:
+        pdf_text += doc.page_content + "\n"
+    # Define text splitters
+    recursive_splitter = RecursiveCharacterTextSplitter(
+        chunk_size=10, chunk_overlap=0, separators=["   第\\s.+\\s章\\s", "第 \\d+ 條\n", "第 \\d+-\\d 條\n"], is_separator_regex=True
+    )
+    # Split text by splitter
+    recursive_chunks = recursive_splitter.split_text(pdf_text)
+
+    return len(recursive_chunks)
