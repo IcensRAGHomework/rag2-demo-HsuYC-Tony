@@ -66,10 +66,22 @@ jobs:
       #     path: /tmp/grading_results.txt
       #     key: grading-results-${{ github.run_id }}
 
+      # - name: Upload Grading Results as Artifact
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: grading-results
+      #     path: grading_results.txt
+      #     retention-days: 1  # Keep the artifact for 1 day
+
       - name: Upload Grading Results as Artifact
+        id: upload
         uses: actions/upload-artifact@v4
         with:
           name: grading-results
           path: grading_results.txt
-          retention-days: 1  # Keep the artifact for 1 day
+          retention-days: 1
+
+      - name: Get Artifact Info
+        run: |
+          echo "ARTIFACT_NAME=grading-results" >> $GITHUB_ENV
 
