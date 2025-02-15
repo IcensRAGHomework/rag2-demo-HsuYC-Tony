@@ -9,14 +9,14 @@ permissions:
   push:
     paths:
       - 'student_assignment.py'
-  workflow_dispatch:
-    inputs:
-      hw02_q1_results:
-        description: "Results of question 1"
-        required: true
-      hw02_q2_results:
-        description: "Results of question 2"
-        required: true
+  # workflow_dispatch:
+    # inputs:
+    #   hw02_q1_results:
+    #     description: "Results of question 1"
+    #     required: true
+    #   hw02_q2_results:
+    #     description: "Results of question 2"
+    #     required: true
     # inputs:
     #   total_score:
     #     description: "Total score from autograder"
@@ -28,7 +28,7 @@ permissions:
 
 jobs:
   trigger-autograding:
-    if: github.event_name == 'push'
+    # if: github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
       # - name: Test the Authentication
@@ -208,23 +208,45 @@ jobs:
       #     done
       
       #     echo "Grading completed. Proceeding with workflow."
+      - name: Restore Grading Results
+        uses: actions/cache@v4
+        with:
+          path: /tmp/grading_results.txt
+          key: grading-results-${{ github.run_id }}
+          restore-keys: grading-results-
 
-      # - name: Get result of question 1
-      #   id: Hw02_Q1
-      #   run: |
-      #     HW02_Q1_RESULTS=$(grep 'HW02_Q1_RESULTS' grading_results.txt | cut -d ':' -f2)
-      #     echo "HW02_Q1_RESULTS=${HW02_Q1_RESULTS:-0}" >> $GITHUB_ENV
+      - name: Wait for Results
+        run: |
+          RESULTS_FILE="/tmp/grading_results.txt"
+          echo "" > "$RESULTS_FILE"  # Ensure fresh results
       
-      # - name: Get result of question 2
-      #   id: Hw02_Q2
-      #   run: |
-      #     HW02_Q2_RESULTS=$(grep 'HW02_Q2_RESULTS' grading_results.txt | cut -d ':' -f2)
-      #     echo "HW02_Q2_RESULTS=${HW02_Q2_RESULTS:-0}" >> $GITHUB_ENV
+          while [[ ! -s "$RESULTS_FILE" ]]; do
+            echo "Waiting for grading to complete..."
+            sleep 10
+          done
+      
+          echo "Grading completed. Results:"
+          cat "$RESULTS_FILE"
 
-      # - name: Debug Receive Results
-      #   run: |
-      #     echo "Receive Q1 Result: $HW02_Q1_RESULTS"
-      #     echo "Receive Q2 Result: $HW02_Q2_RESULTS"
+
+      - name: Get result of question 1
+        id: Hw02_Q1
+        run: |
+          # HW02_Q1_RESULTS=$(grep 'HW02_Q1_RESULTS' grading_results.txt | cut -d ':' -f2)
+          HW02_Q1_RESULTS=$(grep 'HW02_Q1_RESULTS' /tmp/grading_results.txt | cut -d ':' -f2 | xargs)
+          echo "HW02_Q1_RESULTS=${HW02_Q1_RESULTS:-0}" >> $GITHUB_ENV
+      
+      - name: Get result of question 2
+        id: Hw02_Q2
+        run: |
+          # HW02_Q2_RESULTS=$(grep 'HW02_Q2_RESULTS' grading_results.txt | cut -d ':' -f2)
+          HW02_Q2_RESULTS=$(grep 'HW02_Q2_RESULTS' /tmp/grading_results.txt | cut -d ':' -f2 | xargs)
+          echo "HW02_Q2_RESULTS=${HW02_Q2_RESULTS:-0}" >> $GITHUB_ENV
+
+      - name: Debug Receive Results
+        run: |
+          echo "Receive Q1 Result: $HW02_Q1_RESULTS"
+          echo "Receive Q2 Result: $HW02_Q2_RESULTS"
 
       # - name: Remove grading_results.txt
       #   run: |
@@ -233,36 +255,6 @@ jobs:
       #     git rm grading_results.txt
       #     git commit -m "Remove grading results" || echo "No changes to commit"
       #     git push origin main || echo "No new changes to push"
-
-      # # Aggregate autograding results
-      # - name: Report autograding results
-      #   id: grading_report
-      #   uses: classroom-resources/autograding-grading-reporter@v1
-      #   env:
-      #     HW02_Q1_RESULTS: "${{ env.HW02_Q1_RESULTS }}"
-      #     HW02_Q2_RESULTS: "${{ env.HW02_Q2_RESULTS }}"
-      #   with:
-      #     runners: Hw02_Q1,Hw02_Q2
-
-  process-result:
-    if: github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Store Q1 Results
-        id: Hw02_Q1
-        run: |
-          HW02_Q1_RESULTS="${{ github.event.inputs.hw02_q1_results }}"
-      
-          # Ensure fallback to 0 if the output is empty
-          echo "HW02_Q1_RESULTS=${HW02_Q1_RESULTS:-0}" >> $GITHUB_ENV
-
-      - name: Store Q2 Results
-        id: Hw02_Q2
-        run: |
-          HW02_Q2_RESULTS="${{ github.event.inputs.hw02_q2_results }}"
-      
-          # Ensure fallback to 0 if the output is empty
-          echo "HW02_Q2_RESULTS=${HW02_Q2_RESULTS:-0}" >> $GITHUB_ENV
 
       # Aggregate autograding results
       - name: Report autograding results
@@ -273,6 +265,36 @@ jobs:
           HW02_Q2_RESULTS: "${{ env.HW02_Q2_RESULTS }}"
         with:
           runners: Hw02_Q1,Hw02_Q2
+
+  # process-result:
+  #   if: github.event_name == 'workflow_dispatch'
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Store Q1 Results
+  #       id: Hw02_Q1
+  #       run: |
+  #         HW02_Q1_RESULTS="${{ github.event.inputs.hw02_q1_results }}"
+      
+  #         # Ensure fallback to 0 if the output is empty
+  #         echo "HW02_Q1_RESULTS=${HW02_Q1_RESULTS:-0}" >> $GITHUB_ENV
+
+  #     - name: Store Q2 Results
+  #       id: Hw02_Q2
+  #       run: |
+  #         HW02_Q2_RESULTS="${{ github.event.inputs.hw02_q2_results }}"
+      
+  #         # Ensure fallback to 0 if the output is empty
+  #         echo "HW02_Q2_RESULTS=${HW02_Q2_RESULTS:-0}" >> $GITHUB_ENV
+
+  #     # Aggregate autograding results
+  #     - name: Report autograding results
+  #       id: grading_report
+  #       uses: classroom-resources/autograding-grading-reporter@v1
+  #       env:
+  #         HW02_Q1_RESULTS: "${{ env.HW02_Q1_RESULTS }}"
+  #         HW02_Q2_RESULTS: "${{ env.HW02_Q2_RESULTS }}"
+  #       with:
+  #         runners: Hw02_Q1,Hw02_Q2
 
   # receive_score:
   #   if: github.event_name == 'workflow_dispatch'
