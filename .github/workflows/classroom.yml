@@ -216,25 +216,58 @@ jobs:
       #     key: grading-results-${{ github.run_id }}
       #     restore-keys: grading-results-
 
-      - name: Download Grading Results Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: grading-results
-          path: .
+      # - name: Download Grading Results Artifact
+      #   uses: actions/download-artifact@v4
+      #   with:
+      #     name: grading-results
+      #     path: .
+
+      # - name: Get Latest Artifact URL
+      #   id: get-artifact
+      #   run: |
+      #     ARTIFACT_URL=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+      #       "https://api.github.com/repos/${{ github.repository }}/actions/artifacts" \
+      #       | jq -r '.artifacts[] | select(.name=="grading-results") | .archive_download_url' | head -n 1)
+          
+      #     if [[ -z "$ARTIFACT_URL" ]]; then
+      #       echo "No artifact found!"
+      #       exit 1
+      #     fi
+
+      #     echo "ARTIFACT_URL=$ARTIFACT_URL" >> $GITHUB_ENV
+
+      # - name: Download Grading Results
+      #   run: |
+      #     curl -L -o grading-results.zip -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+      #       "$ARTIFACT_URL"
+      #     unzip grading-results.zip
 
       - name: Wait for Results
         run: |
           RESULTS_FILE="grading_results.txt"
-          echo "" > "$RESULTS_FILE"  # Ensure fresh results
+          # echo "" > "$RESULTS_FILE"  # Ensure fresh results
       
           while [[ ! -s "$RESULTS_FILE" ]]; do
             echo "Waiting for grading to complete..."
             sleep 10
+
+            ARTIFACT_URL=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+              "https://api.github.com/repos/${{ github.repository }}/actions/artifacts" \
+              | jq -r '.artifacts[] | select(.name=="grading-results") | .archive_download_url' | head -n 1)
+
+            if [[ -z "$ARTIFACT_URL" ]]; then
+              echo "No artifact found!"
+              exit 1
+            fi
+            echo "ARTIFACT_URL=$ARTIFACT_URL" >> $GITHUB_ENV
+
+            curl -L -o grading-results.zip -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+              "$ARTIFACT_URL"
+            unzip grading-results.zip
           done
       
           echo "Grading completed. Results:"
           cat "$RESULTS_FILE"
-
 
       - name: Get result of question 1
         id: Hw02_Q1
