@@ -208,16 +208,23 @@ jobs:
       #     done
       
       #     echo "Grading completed. Proceeding with workflow."
-      - name: Restore Grading Results
-        uses: actions/cache@v4
+
+      # - name: Restore Grading Results
+      #   uses: actions/cache@v4
+      #   with:
+      #     path: /tmp/grading_results.txt
+      #     key: grading-results-${{ github.run_id }}
+      #     restore-keys: grading-results-
+
+      - name: Download Grading Results Artifact
+        uses: actions/download-artifact@v4
         with:
-          path: /tmp/grading_results.txt
-          key: grading-results-${{ github.run_id }}
-          restore-keys: grading-results-
+          name: grading-results
+          path: .
 
       - name: Wait for Results
         run: |
-          RESULTS_FILE="/tmp/grading_results.txt"
+          RESULTS_FILE="grading_results.txt"
           echo "" > "$RESULTS_FILE"  # Ensure fresh results
       
           while [[ ! -s "$RESULTS_FILE" ]]; do
@@ -233,14 +240,14 @@ jobs:
         id: Hw02_Q1
         run: |
           # HW02_Q1_RESULTS=$(grep 'HW02_Q1_RESULTS' grading_results.txt | cut -d ':' -f2)
-          HW02_Q1_RESULTS=$(grep 'HW02_Q1_RESULTS' /tmp/grading_results.txt | cut -d ':' -f2 | xargs)
+          HW02_Q1_RESULTS=$(grep 'HW02_Q1_RESULTS' grading_results.txt | cut -d ':' -f2 | xargs)
           echo "HW02_Q1_RESULTS=${HW02_Q1_RESULTS:-0}" >> $GITHUB_ENV
       
       - name: Get result of question 2
         id: Hw02_Q2
         run: |
           # HW02_Q2_RESULTS=$(grep 'HW02_Q2_RESULTS' grading_results.txt | cut -d ':' -f2)
-          HW02_Q2_RESULTS=$(grep 'HW02_Q2_RESULTS' /tmp/grading_results.txt | cut -d ':' -f2 | xargs)
+          HW02_Q2_RESULTS=$(grep 'HW02_Q2_RESULTS' grading_results.txt | cut -d ':' -f2 | xargs)
           echo "HW02_Q2_RESULTS=${HW02_Q2_RESULTS:-0}" >> $GITHUB_ENV
 
       - name: Debug Receive Results
