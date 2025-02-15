@@ -249,7 +249,7 @@ jobs:
       
           while [[ ! -s "$RESULTS_FILE" ]]; do
             echo "Waiting for grading to complete..."
-            sleep 10
+            sleep 30
 
             ARTIFACT_URL=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
               "https://api.github.com/repos/${{ github.repository }}/actions/artifacts" \
