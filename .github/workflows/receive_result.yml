@@ -85,3 +85,30 @@ jobs:
         run: |
           echo "ARTIFACT_NAME=grading-results" >> $GITHUB_ENV
 
+      - name: Get result of question 1
+        id: Hw02_Q1
+        run: |
+          HW02_Q1_RESULTS="${{ github.event.inputs.hw02_q1_results }}"
+          echo "HW02_Q1_RESULTS=${HW02_Q1_RESULTS:-0}" >> $GITHUB_ENV
+      
+      - name: Get result of question 2
+        id: Hw02_Q2
+        run: |
+          HW02_Q2_RESULTS="${{ github.event.inputs.hw02_q2_results }}"
+          echo "HW02_Q2_RESULTS=${HW02_Q2_RESULTS:-0}" >> $GITHUB_ENV
+
+      - name: Debug Receive Results
+        run: |
+          echo "Receive Q1 Result: $HW02_Q1_RESULTS"
+          echo "Receive Q2 Result: $HW02_Q2_RESULTS"
+
+      # Aggregate autograding results
+      - name: Report autograding results
+        id: grading_report
+        uses: classroom-resources/autograding-grading-reporter@v1
+        env:
+          HW02_Q1_RESULTS: "${{ env.HW02_Q1_RESULTS }}"
+          HW02_Q2_RESULTS: "${{ env.HW02_Q2_RESULTS }}"
+        with:
+          runners: Hw02_Q1,Hw02_Q2
+
