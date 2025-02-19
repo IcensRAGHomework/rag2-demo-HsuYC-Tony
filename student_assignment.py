@@ -23,7 +23,6 @@ def hw02_1(q1_pdf):
     return char_chunks[-1]
 
 def hw02_2(q2_pdf):
-  
     # loader = PyPDFLoader(q2_pdf)
     # docs = loader.load()
     # pdf_text = ""
