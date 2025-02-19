@@ -18,6 +18,7 @@ def hw02_1(q1_pdf):
     )
     # # Split text by splitter
     char_chunks = char_splitter.split_documents(docs)
+  
 
     return char_chunks[-1]
 
